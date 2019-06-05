@@ -1,0 +1,730 @@
+---
+title: "Conceitos Estatísticos para IA"
+author: 'Aluno: Alex Inácio | RM: 332999 , Aluno: José Rueda | RM: 332193, Aluno: Marcos Cordeiro | RM: 332382, Aluno: Paulo Franco | RM: 332686'
+subtitle: Uso e análise dos conceitos e técnicas estatísticas
+output:
+  html_document:
+    df_print: paged
+---
+![direitos reservados](C:\Users\ainacio\Desktop\FIAP - IA\3 - Conceitos de Estatisticos para IA/FIAP.png){ width=20% }
+
+
+******
+###Avaliação Total da Disciplina : Utilização de técnicas estatísticas:
+####Utilizando as técnicas desenvolvidas em aula.
+####Técnicas de análise de dados e técnicas supervisionadas.
+******
+
+
+******
+####Utilizando a base descrita e disponibilizada em aula o objetivo do trabalho é mensurar a variável “Quality” dos vinhos desta região de Portugal com as variáveis de características (composição) dos vinhos.
+******
+
+******
+####Reconhecimento da Base: Um descrito do tamanho da base, quantidade de variáveis, formatos, e alguns descritivos (“achados”) sobre a base/variáveis.
+******
+
+******
+####Apresentamos uma base de dados com 6497 observações de vinhos portugueses tintos e brancos. Essas observações são compostas por 11 (onze) variáveis quantitativas continuas contendo valores apurados para suas características ou composições, 1 (uma) variável quantitativa continua que poderá ser convertida em categórica ordinal, pois indica a qualidade do vinho e será a nossa variável 'target', e 1 (uma) variável categorica nominal indicando o tipo do vinho (tinto ou branco). O nosso objetivo é através da inferência estatística descobrir se existe alguma correlação entre qualidade do vinho e os valores dos seus atributos. Essa relação causal deverá explicar o porquê um vinho foi considerado melhor ou pior que o outro.
+******
+
+******
+##Algumas etapas importantes:
+******
+
+******
+###1.	Base
+******
+
+#####Reconhecimento da Base: Um descrito do tamanho da base, quantidade de variáveis, formatos, e alguns descritivos (“achados”) sobre a base/variáveis.
+#####Avaliar se a análise será feita com os dois tipos de vinhos juntos ou se separaria por tipo para analisá-los. 
+#####Análise exploratória de dados: Detecção de outliers, gráficos e análise sobre os dois tipos de vinhos. Correlações entre elas (numéricas e gráficos).
+#####No fechamento desta etapa colocar qual a opção seguirá sobre os tipos de vinhos , sobre os outliers (caso tenha) e o uso de Componentes Principais
+
+
+```{r recbase, echo=FALSE}
+# mostrar até 2 casas decimais
+options("scipen" = 2)
+
+# Ler arquivo csv
+
+setwd("C:/Users/ainacio/Desktop/FIAP - IA/3 - Conceitos de Estatisticos para IA")
+getwd()
+Vinhos <- read.csv2("BaseWine_Red_e_White2018.csv", row.names=1)
+
+
+#Base
+#View(Vinhos)
+
+
+#mostrar as variáveis
+str(Vinhos)
+
+```
+
+******
+###Descritivo sobre as variáveis:
+******
+  
+#####1 - Fixed acidity / Acidez fixa:
+#####a maioria dos ácidos envolvidos no vinho ou fixos ou não voláteis (não evaporar prontamente)
+#####2 - Volatile acidity /Acidez volátil:
+#####a quantidade de ácido acético no vinho, que em níveis muito altos pode levar a um gosto desagradável de vinagre
+#####3 - Citric acid / Ácido cítrico:
+#####encontrado em pequenas quantidades, o ácido cítrico pode adicionar "frescura" e sabor aos vinhos
+#####4 - Residual sugar / Açúcar residual:
+#####a quantidade de açúcar restante após a fermentação pára, é raro encontrar vinhos com menos de 1 grama / litro e vinhos com mais de 45 gramas / litro são considerados doces
+#####5 - Chlorides/ Cloretos:
+#####a quantidade de sal no vinho
+#####6 - Free sulfur dioxide / Dióxido de enxofre livre:
+#####a forma livre de SO2 existe em equilíbrio entre o SO2 molecular (como gás dissolvido) e o íon bissulfito; impede o crescimento microbiano e a oxidação do vinho
+#####7 - Total sulfur dioxide / Dióxido de enxofre total:
+#####quantidade de formas livres e encadernadas de S02; em baixas concentrações, o SO2 é quase indetectável no vinho, mas nas concentrações de SO2 livre acima de 50 ppm, o SO2 se torna evidente no nariz e no sabor do vinho.
+#####8 - Density / Densidade:
+#####a densidade da água é próxima à da água, dependendo do percentual de álcool e teor de açúcar
+#####9 - pH / pH:
+#####descreve como o vinho é acídico ou básico numa escala de 0 (muito ácido) a 14 (muito básico); a maioria dos vinhos tem entre 3-4 na escala de pH
+#####10 - Sulphates / Sulfatos:
+##### um aditivo de vinho que pode contribuir para os níveis de gás de dióxido de enxofre (S02), que age como um antimicrobiano e antioxidante
+#####11 - Alcohol / Álcool:
+#####o teor alcoólico percentual do vinho
+#####12 - Quality / Qualidade:
+#####variável de saída (com base em dados sensoriais, pontuação entre 0 e 10)
+
+
+```{r labels, echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+
+#Criando label para cada coluna do dataset
+
+attr(Vinhos$fixedacidity, 'label') <- 'acidez fixa'
+attr(Vinhos$volatileacidity, 'label') <- 'acidez volatil'
+attr(Vinhos$citricacid, 'label') <- 'acido citrico'
+attr(Vinhos$residualsugar, 'label') <- 'acucar residual'
+attr(Vinhos$chlorides, 'label') <- 'cloretos'
+attr(Vinhos$freesulfurdioxide, 'label') <- 'dioxido de enxofre livre'
+attr(Vinhos$totalsulfurdioxide, 'label') <- 'dioxido de enxofre total'
+attr(Vinhos$density, 'label') <- 'densidade'
+attr(Vinhos$pH, 'label') <- 'pH'
+attr(Vinhos$sulphates, 'label') <- 'sulfatos'
+attr(Vinhos$alcohol, 'label') <- 'alcool'
+attr(Vinhos$quality, 'label') <- 'qualidade'
+attr(Vinhos$Vinho, 'label') <- 'vinho'
+Vinhos
+
+```
+
+
+******
+#####No sumário das variáveis podemos notar alguns atributos com grande dispersão sugerindo a presença de outliers, como por exemplo: o açucar residual, a acidez cítrica, o dióxido de exofre total, o dióxido de enxofre livre, o álcool. Podemos notar que na nossa base de dados temos avaliados muito mais vinhos brancos do que tintos.
+******
+
+```{r sumario, echo=FALSE, message=FALSE, warning=FALSE}
+#Estatisticas descritivas - Medidas resumo
+summary(Vinhos)
+```
+
+
+******
+### Análise dos dados
+
+#####Numa escala de 0 a 10 a menor nota de qualidade obtida foi 3 e a maior nota foi 9.
+
+#####No atributo qualidade vimos uma distribuição com muito poucos registros considerados excelentes e ruins. A maioria dos vinhos foi classificada como normal (nem ruim, nem excelente), digamos, no meio termo da classificação.
+******
+
+```{r rec_avaliacao, echo=FALSE, message=FALSE, warning=FALSE}
+# trabalhar com as variáveis 
+attach(Vinhos)
+
+sapply(Vinhos, function(x)all(is.na(x)))
+
+# Frequência absoluta 
+#Os vinhos receberam as notas de qualidade de 3 a 9. 
+table(as.factor(Vinhos$quality), Vinhos$Vinho)
+```
+
+
+```{r distqualidade, echo=FALSE, message=FALSE, warning=FALSE}
+hist(quality, col=c("pink"), col.main="darkgray", prob=T)
+```
+
+******
+#####Os vinhos brancos apresentam notas retativamente melhores do que as notas dos vinhos tintos.
+******
+
+```{r rec_relativa, echo=FALSE, message=FALSE, warning=FALSE}
+# Frequência relativa
+#As notas dos vinhos brancos apresentam notas retativamente melhores do que as dos vinhos tintos.
+prop.table(table(as.factor(Vinhos$quality), Vinhos$Vinho),2)
+```
+
+******
+#####Apurando as médias dos atributos dos vinhos, por tipo de vinho, podemos notar que a qualidade, o álcool, a densidade e o PH apresentaram resultados muito próximos, apresentando pouca ou diferença insignificante, sugerindo a possibilidade de existência alguma correlação; entretanto os demais atributos apresentam consideráveis diferenças para suas médias.
+******
+
+```{r agregacao, echo=FALSE, message=FALSE, warning=FALSE}
+aggregate(Vinhos, by = list(Vinho), FUN = mean)
+```
+
+******
+#####Identificamos outliers em todas as variáveis da base.
+******
+
+```{r distribuicoes, echo=FALSE, message=FALSE, warning=FALSE}
+#comando para gerar em 3 linhas e 4 colunas os histogramas
+par (mfrow=c(3,4))
+hist(fixedacidity)
+hist(volatileacidity)
+hist(citricacid )
+hist(residualsugar)
+hist(chlorides)
+hist(freesulfurdioxide)
+hist(totalsulfurdioxide)
+hist(density)
+hist(pH)
+hist(sulphates)
+hist(alcohol)
+hist(quality)
+par (mfrow=c(1,1))
+```
+
+
+```{r outliers, echo=FALSE, message=FALSE, warning=FALSE}
+#comando para gerar em 3 linhas e 4 colunas os histogramas
+par (mfrow=c(3,4))
+boxplot(fixedacidity, main='fixedacidity')
+boxplot(volatileacidity , main='volatileacidity')
+boxplot(citricacid , main='citricacid')
+boxplot(residualsugar, main='residualsugar')
+boxplot(chlorides, main='chlorides')
+boxplot(freesulfurdioxide, main='freesulfurdioxide')
+boxplot(totalsulfurdioxide, main='totalsulfurdioxide')
+boxplot(density, main='density')
+boxplot(pH, main='pH')
+boxplot(sulphates, main='sulphates')
+boxplot(alcohol, main='alcohol')
+boxplot(Vinhos$quality, main='quality')
+par (mfrow=c(1,1))
+
+```
+
+```{r sufurdiox_outliers, echo=FALSE, message=FALSE, warning=FALSE}
+# Gráfico de dispersão ( pch=caracter, lwd=largura)
+
+plot(freesulfurdioxide~totalsulfurdioxide)
+plot(freesulfurdioxide~totalsulfurdioxide, pch=1, lwd=3)
+
+plot(freesulfurdioxide~totalsulfurdioxide)
+abline(v=mean(freesulfurdioxide), col="red")
+abline(h=mean(totalsulfurdioxide), col="green")
+```
+
+******
+#####Para a acidez volátil podemos identificar duas parábolas e outliers. Uma distribuição anormal não condizente por exemplo com a distribuição da qualidade.
+******
+
+```{r volatileacidity, echo=FALSE, message=FALSE, warning=FALSE}
+#install.packages("plotly")
+library(plotly)
+plot_ly(x = Vinhos$volatileacidity, type = 'histogram')
+```
+
+******
+#####Na comparação entre os vinhos tintos e brancos podemos verificar uma certa disparidade na maioria dos atributos exceto para a qualidade e o álcool.
+******
+
+```{r comp_tinto_branco, echo=FALSE, message=FALSE, warning=FALSE}
+par (mfrow=c(3,4))
+boxplot(quality ~ Vinho, main='quality')
+boxplot(fixedacidity ~ Vinho, main='fixedacidity',col=c('red','blue'))
+boxplot(volatileacidity ~ Vinho , main='volatileacidity',col=c('red','blue'))
+boxplot(citricacid ~ Vinho, main='citricacid',col=c('red','blue'))
+boxplot(residualsugar ~ Vinho, main='residualsugar',col=c('red','blue'))
+boxplot(chlorides ~ Vinho, main='chlorides',col=c('red','blue'))
+boxplot(freesulfurdioxide ~ Vinho, main='freesulfurdioxide' ,col=c('red','blue'))
+boxplot(totalsulfurdioxide ~ Vinho, main='totalsulfurdioxide',col=c('red','blue'))
+boxplot(density ~ Vinho, main='density',col=c('red','blue'))
+boxplot(pH ~ Vinho, main='pH',col=c('red','blue'))
+boxplot(sulphates ~ Vinho, main='sulphates',col=c('red','blue'))
+boxplot(alcohol ~ Vinho, main='alcohol',col=c('red','blue'))
+par (mfrow=c(1,1))
+```
+
+******
+#####Voltando a tomar como exemplo a acidez volátil e comparando os resultado agora segregados entre tinto  e branco podemos verificar que as distribuição segregadas parecem mais normais.
+******
+
+```{r acidez_branco_tinto, echo=FALSE, message=FALSE, warning=FALSE}
+
+white <- subset(Vinhos, Vinho=="WHITE", select=c(quality,fixedacidity,volatileacidity,citricacid,residualsugar,
+                                                 chlorides,freesulfurdioxide,totalsulfurdioxide,density,pH,
+                                                 sulphates,alcohol))
+
+
+red<- subset(Vinhos, Vinho=="RED", select=c(quality,fixedacidity,volatileacidity,citricacid,residualsugar,
+                                            chlorides,freesulfurdioxide,totalsulfurdioxide,density,pH,
+                                            sulphates,alcohol))
+
+
+comparing_hist <- plot_ly(alpha = 0.6) %>% 
+  add_histogram(x = ~red$volatileacidity, type = 'histogram', name='Vinho Tinto' ) %>%
+  add_histogram(x = ~white$volatileacidity, name='Vinho Branco') %>%
+  layout(barmode = 'overlay')
+comparing_hist
+
+```
+
+******
+#####Segregamos a análise por tipo de vinho. Para o vinho branco temos mais observações do que para o vinho tinto. A distribuição das notas de qualidade para o vinho branco tem distribuição semelhante a da amostra consolidada da base. A partir de agora a análise será realizada somente com os dados dos vinhos brancos.
+******
+
+
+```{r correlacao, echo=FALSE, message=FALSE, warning=FALSE}
+hist(white$quality)       
+ 
+#Estatísticas descritivas
+summary(white)
+
+```
+
+
+```{r matriz_corr, echo=FALSE, message=FALSE, warning=FALSE}
+# matriz de correlações
+matcor <- cor(white)
+print(matcor, digits = 2)
+```
+
+
+```{r correlacao_branco, echo=FALSE, message=FALSE, warning=FALSE}
+#install.packages("corrgram")
+library(corrgram)
+
+corrgram(matcor, type = "cor", lower.panel = panel.shade, upper.panel = panel.pie)
+
+panel.cor <- function(x, y, digits=2, prefix ="", cex.cor,
+                      ...)  {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- cor(x, y , use = "pairwise.complete.obs")
+  txt <- format(c(r, 0.123456789), digits = digits) [1]
+  txt <- paste(prefix, txt, sep = "")
+  if (missing(cex.cor))
+    cex <- 0.8/strwidth(txt)
+  # abs(r) é para que na saída as correlações ficam proporcionais
+  text(0.5, 0.5, txt, cex = cex * abs(r))
+}
+#pdf(file = "grafico.pdf")
+pairs(white, lower.panel=panel.smooth, upper.panel=panel.cor)
+```
+
+******
+#####Para melhorar a performance preditiva promoveremos a redução de dimensionalidade. Analisando os componentes principais será descartada a variável "residualsugar" devido a sua alta correlação com a variável "density" e a sua menor variância, assim como, será descartada a variável "freesulfurdioxide" devido a sua alta correlação com a variável "totalsulfurdioxide" e sua menor variância descartando-se os outliers.
+******
+
+```{r}
+#####Paulo Franco - anexo2
+summary(Vinhos)
+
+Vinhos$quality
+
+sort(unique(Vinhos$quality))
+
+factor(Vinhos$quality, ordered=TRUE, 
+        labels=c("Ruim","Ruim","Regular","Regular","Bom", "Bom", "Ótimo"))
+
+#install.packages("magrittr")
+library(magrittr)
+#install.packages("dplyr")
+library(dplyr)
+tintos <- Vinhos %>% filter(Vinho == "RED")
+brancos <- Vinhos %>% filter(Vinho == "WHITE")
+
+moda <- function(vetor) {
+  valores = sort(unique(vetor))
+  retorno = NULL
+  for (valor in valores) {
+    retorno <- c(retorno, length(vetor[vetor == valor]))
+  }
+  ret <-  as.matrix(retorno)
+  rownames(ret) <- valores
+  colnames(ret) <- c("frequência")
+  ret
+}
+
+plot(moda(brancos$quality),main = 'Vinhos Brancos', type = 'l')
+
+plot(moda(tintos$quality),main = 'Vinhos Tintos', type = 'l')
+#####Paulo Franco - anexo2
+
+```
+
+
+```{r}
+####Alex
+
+
+
+#install.packages("corrplot")
+library(corrplot)
+
+corrplot::corrplot(matcor, method="circle", order="hclust")
+
+
+attach(Vinhos)
+
+####Alex
+
+```
+
+
+******
+###2.	Algoritmos para explicar a variável “Quality” - escalar
+******
+
+#####Modelo1: Regressão Linear
+#####Modelo 2:  Árvore de Regressão
+#####Para cada modelo fazer as análises adequadas como: 
+######-> 	explicar a técnica
+######-> 	qual a variável dependente, 
+######-> 	quais são as variáveis independentes,
+######-> 	relações entre elas (numéricas e gráficos) (verificar se todas já foram efetuadas adequadamente na parte 1.
+######-> 	saída do modelo (análise)
+######-> 	qualidade do modelo
+######-> 	O que cada modelo gerou de resultados?
+
+#####Comparação entre os modelos:
+######Utilizando as métricas adequadas para comparação de modelos façam um resumo sobre a qualidade dos modelos e indiquem qual o modelo/ técnica que vocês recomendariam
+
+
+******
+##Modelo1: Regressão Linear
+******
+
+
+******
+###### Para aplicação das técnicas utilizaremos apenas a base de vinhos brancos (4898 observações), a base de vinhos tintos NÃO será considerada (1599 observações)
+******
+
+
+******
+###### Boa prática: Se por acaso existe um grande número de variáveis, é recomendado usar métodos de seleção automática para eliminar aquelas com efeitos insignificantes E o conjunto reduzido de variáveis pode então ser investigado pelo método de todos os modelos possíveis.
+******
+
+
+
+******
+####-> 	explicar a técnica
+##### R: Técnica estatística que relaciona funcionalmente, uma variável dependente (Qualidade do vinho) às suas possíveis variáveis explicativas (Densidade e Dioxido de enxofre total).
+##### Qualidade do Vinho em função da densidade e da quantidade de dioxido de enxofre total.
+******
+
+
+******
+####-> 	qual a variável dependente, 
+##### R: A variável dependente, ou seja, a variável resposta é "Qualidade"
+******
+
+
+******
+####-> 	quais são as variáveis independentes,
+##### R: As variáveis independentes, ou seja, os valores fixos conhecidos são: Densidade e Dioxido de enxofre total.
+******
+
+******
+####-> 	relações entre elas (numéricas e gráficos) (verificar se todas já foram efetuadas adequadamente na parte 1).
+##### R: A relação entre as variáveis foi efetuada na etapa 1 do estudo.
+******
+
+******
+####-> 	saída do modelo (análise)
+####-> 	qualidade do modelo
+####-> 	O que cada modelo gerou de resultados?
+##### R: mse = 0.8409667, erro_usando_media = 0.8855482
+##### R: gráfico resíduo = Preditor linear x Residuos
+##### R:Teste de Normalidade de Shapiro Wilk
+******
+
+```{r}
+####Alex
+# Modelo de regressão linear simples
+
+
+#Para aplicação das técnicas utilizaremos apenas a base de vinhos brancos (4898 observações), a base de vinhos tintos NÃO será considerada (1599 observações)
+
+Vinho_branco <- subset(Vinhos, Vinho=="WHITE", select=c(quality,fixedacidity,volatileacidity,citricacid,residualsugar,chlorides,freesulfurdioxide,totalsulfurdioxide,density,pH, sulphates,alcohol))
+
+
+# modelo1 <- lm(quality ~ fixedacidity+volatileacidity+citricacid+residualsugar+chlorides+freesulfurdioxide+totalsulfurdioxide+density+pH+sulphates+alcohol+Vinho)
+# summary(modelo1)
+# 
+# 
+# stepwise<-step(modelo1,direction="both")
+#  
+# stepwise
+# summary(stepwise)
+
+
+# Modelo final.
+modelo_fim <- lm(Vinho_branco$quality ~ Vinho_branco$density+Vinho_branco$totalsulfurdioxide)
+summary(modelo_fim)
+#View(modelo_fim)
+
+stepwise<-step(modelo_fim,direction="both")
+ 
+stepwise
+summary(stepwise)
+
+
+Val_pred <- predict(modelo_fim,interval = "prediction", level = 0.95) 
+fix(Val_pred)
+# intervalo de confianca - grafico para media
+fit <- Val_pred[,1] # valores preditos
+lower <- Val_pred[,2] # limite inferior
+upper <- Val_pred[,3] # limite superior
+
+
+mse <- mean((Vinho_branco$quality - fit)^2)
+sqrt(mse)
+
+erro_usando_media <- mean((Vinho_branco$quality - mean(Vinho_branco$quality))^2)
+sqrt(erro_usando_media)
+
+
+# grafico residuo
+rs <- resid(modelo_fim)
+plot(predict(modelo_fim), rs, xlab = "Preditor linear",ylab = "Residuos")
+abline(h = 0, lty = 2)
+
+
+#observa-se SE violação da suposição de que os erros aleatórios têm distribuição Normal
+  
+qqnorm(residuals(modelo_fim), ylab="Resíduos",xlab="Quantis teóricos",main="")
+qqline(residuals(modelo_fim))
+
+#Teste de Normalidade de Shapiro Wilk
+
+# sE Valor P do teste é pequeno, rejeita-se a hipótese de normalidade dos resíduos e,
+# por consequência, conclui-se que os erros não são normalmente distribuídos.
+shapiro.test(residuals(modelo_fim))
+
+## perform Durbin-Watson test
+#install.packages("lmtest")
+# library(lmtest)
+# dwtest(residuals(modelo_fim))
+
+attach(Vinho_branco)
+Vinhos_Final<-cbind(Vinho_branco,Val_pred)
+
+fix(Vinhos_Final)
+
+####Alex
+
+```
+
+
+
+
+******
+##Modelo 2:  Árvore de Regressão
+******
+
+```{r}
+####Alex
+## Árvore de Regressão
+
+
+#install.packages("rpart")
+#install.packages("rpart.plot")
+library(rpart)
+library(rpart.plot)
+
+modelo_Valor_tree <- rpart (quality ~ fixedacidity+volatileacidity+citricacid+residualsugar+chlorides+freesulfurdioxide+totalsulfurdioxide+density+pH+sulphates+alcohol+Vinho, data=Vinhos, 
+                     cp = 0.001,minsplit = 5,maxdepth=10)
+
+
+
+
+# Faz o Gráfico
+rpart.plot(modelo_Valor_tree, type=4, extra=1, under=FALSE, clip.right.labs=TRUE,
+           fallen.leaves=FALSE,   digits=2, varlen=-10, faclen=20,
+           cex=0.4, tweak=1.7,
+           compress=TRUE,
+           snip=FALSE)
+
+Val_pred_tree <- predict(modelo_Valor_tree,interval = "prediction", level = 0.95) 
+str(Val_pred_tree)
+
+
+mse_tree <- mean((Vinhos$quality - Val_pred_tree)^2)
+sqrt(mse_tree)
+
+erro_usando_media <- mean((Vinhos$quality - mean(Vinhos$quality))^2)
+sqrt(erro_usando_media)
+
+# grafico residuo
+rs <- Val_pred_tree- Vinhos$quality
+plot(predict(modelo_Valor_tree), rs, xlab = "Com Árvore de Regressão",ylab = "Residuos")
+abline(h = 0, lty = 2)
+
+
+
+####Alex
+
+```
+
+
+******
+###3. Agoritmos para explicar a variável “Quality” : Vinhos Bons e Ruins - categórico
+******
+
+#####Modelo 1:  Árvore de Decisão 
+#####Modelo 2:  Regressão Logística 
+#####Para cada modelo fazer as análises adequadas como: 
+######->  explicar a técnica
+######-> 	qual a variável dependente, 
+######-> 	quais são as variáveis independentes,
+######-> 	relações entre elas (numéricas e gráficos) (verificar se todas já foram efetuadas adequadamente na parte 1.
+######-> 	saída do modelo (análise)
+######-> 	qualidade do modelo
+######-> 	O que cada modelo gerou de resultados?
+
+#####Comparação entre os modelos:
+######Utilizando as métricas adequadas para comparação de modelos façam um resumo sobre a qualidade dos modelos e indiquem qual o modelo/ técnica que vocês recomendariam
+
+
+******
+##Modelo 3:  Árvore de Decisão
+******
+
+```{r}
+# Técnica de Discriminação: Árvore de decisão.
+
+#Base de vinhos portugueses (brancos e tintos), para estudo de qualidade dos mesmos.
+#Amostra aleatória para disparar campanha.
+#Variave qualidade (quality 3 a 9). Váriavel target (ou resposta)
+
+
+setwd("C:/Users/ainacio/Desktop/FIAP - IA/3 - Conceitos de Estatisticos para IA")
+getwd()
+
+# limpar memória do R
+rm(list=ls(all=TRUE))
+
+
+Vinhos <- read.csv("BaseWine_Red_e_White2018.csv", sep=";")
+
+#Considerando apenas os vinhos brancos
+Vinho_branco <- subset(Vinhos, Vinho=="WHITE", select=c(quality,fixedacidity,volatileacidity,citricacid,residualsugar,chlorides,freesulfurdioxide,totalsulfurdioxide,density,pH, sulphates,alcohol))
+
+
+sort(unique(Vinho_branco$quality))
+
+
+# factor(Vinho_branco$quality, ordered=TRUE,
+#         labels=c("Ruim","Ruim","Regular","Regular","Bom", "Bom", "Ótimo"))
+
+
+#Ruim e Regular = 0
+#Bom e ótimo = 1
+factor(Vinho_branco$quality, ordered=TRUE,
+        labels=c("0","0","0","0","1", "1", "1"))
+
+
+
+
+attach(Vinho_branco)
+fix(Vinho_branco)
+str(Vinho_branco)
+summary(Vinho_branco)
+#View(Vinho_branco)
+
+#Váriável estava númerica, vamos usar o comando factor para:
+#Transformar a variavel em categorica pois estamos utilizamos uma técnica discriminatória
+Vinho_branco$quality <- factor(Vinho_branco$quality)
+
+# Frequência absoluta 
+table(Vinho_branco$quality)
+
+
+#comando para gerar em 4 linhas e duas colunas os plots
+par (mfrow=c(3,2))
+
+#Para melhorar a performance preditiva promoveremos a redução de dimensionalidade. Analisando os componentes principais será descartada a variável "residualsugar" devido a sua alta correlação com a variável "density" e a sua menor variância, assim como, será descartada a variável "freesulfurdioxide" devido a sua alta correlação com a variável "totalsulfurdioxide" e sua menor variância descartando-se os outliers.
+
+plot(Vinho_branco$fixedacidity, Vinho_branco$quality,ylab="Qualidade",xlab="fixedacidity",col=c('red','darkgreen'))
+
+plot(Vinho_branco$volatileacidity, Vinho_branco$quality,ylab="Qualidade",xlab="volatileacidity",col=c('red','darkgreen'))
+
+plot(Vinho_branco$citricacid, Vinho_branco$quality,ylab="Qualidade",xlab="citricacid",col=c('red','darkgreen'))
+
+#plot(Vinho_branco$residualsugar, Vinho_branco$quality,ylab="Qualidade",xlab="residualsugar",col=c('red','darkgreen'))
+
+plot(Vinho_branco$chlorides, Vinho_branco$quality,ylab="Qualidade",xlab="chlorides",col=c('red','darkgreen'))
+
+#plot(Vinho_branco$freesulfurdioxide, Vinho_branco$quality,ylab="Qualidade",xlab="freesulfurdioxide",col=c('red','darkgreen'))
+
+plot(Vinho_branco$totalsulfurdioxide, Vinho_branco$quality , ylab="Qualidade",xlab="dioxido de enxofre total",col=c('red','darkgreen'))
+
+plot(Vinho_branco$density, Vinho_branco$quality,ylab="Qualidade",xlab="Densidade",col=c('red','darkgreen'))
+
+plot(Vinho_branco$pH, Vinho_branco$quality,ylab="Qualidade",xlab="pH",col=c('red','darkgreen'))
+
+plot(Vinho_branco$sulphates, Vinho_branco$quality,ylab="Qualidade",xlab="sulphates",col=c('red','darkgreen'))
+
+plot(Vinho_branco$alcohol, Vinho_branco$quality,ylab="Qualidade",xlab="alcohol",col=c('red','darkgreen'))
+
+#A variável Vinho será desconsiderada, pois filtramos a base apenas para vinho branco (WHITE)
+#plot(Vinho_branco$Vinho, Vinho_branco$quality,ylab="Qualidade",xlab="Vinho",col=c('red','darkgreen'))
+
+
+par (mfrow=c(1,1))#voltar a tela 1 por 1
+
+#Divisao do banco de dados completo em treinamento e teste
+#definir % de casos de treino
+prt <- 2/3 #Pegar 2/3 para treinar
+
+# amostra de casos de treino aleatória
+set.seed(2019)#semente aleatória
+treino <- sample(1:NROW(Vinho_branco), as.integer(prt*NROW(Vinho_branco)))
+
+trainData <- Vinho_branco[treino,]#Pegando parte da amostra
+testData  <- Vinho_branco[-treino,]#jogando o resto na base teste
+
+prop.table(table(trainData$quality))
+prop.table(table(testData$quality))
+
+
+
+# Carrega o pacote: Árvore de decisão
+
+
+#install.packages("rpart") 
+#install.packages("rpart.plot") 
+
+library(rpart) 
+library(rpart.plot) 
+
+
+# informações dos Parâmetros do Modelo
+## Usa rpart para decision tree
+ 
+# modelo_tree <- rpart (quality ~ fixedacidity + volatileacidity + citricacid  + chlorides + totalsulfurdioxide + density + pH + sulphates + alcohol , data=trainData, cp = 0.006,minsplit = 150,maxdepth=10)#150 observações e 10 níveis. #cp é a sensibilidade
+
+
+# modelo_tree <- rpart (quality ~ totalsulfurdioxide + density , data=trainData, cp = 0.006,minsplit = 150,maxdepth=10)#150 observações e 10 níveis. #cp é a sensibilidade
+
+
+
+```
+
+
+
+******
+###4. Nesta atividade usamos somente algumas técnicas supervisionadas, 
+******
+
+#####a)	quais outras técnicas supervisionadas vocês indicariam como adequadas para esta análise?  
+#####b)	 e, das técnicas Não Supervisionadas, quais?
+
+******
